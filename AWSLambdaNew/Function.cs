@@ -1,6 +1,8 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using Microsoft.Extensions.DependencyInjection;
+using AWSSQSService;
+using ConstantsAWS = AWSSQSService.Constants;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -11,8 +13,6 @@ public class Function
 {
     private IServiceCollection _serviceCollection;    
     private static ServiceProvider _serviceProvider;
-
-    public int previousDeliveries;
 
     /// <summary>
     /// Default constructor. This constructor is used by Lambda to construct the instance. When invoked in a Lambda environment
@@ -67,7 +67,7 @@ public class Function
 
     private int GetPreviousDeliveries(Dictionary<string,string> messageAttributes)
     {
-        var previousDeliveriesStr = messageAttributes.FirstOrDefault(a => a.Key.Equals(Constants.APPROXIMATE_RECEIVE_COUNT)).Value;
+        var previousDeliveriesStr = messageAttributes.FirstOrDefault(a => a.Key.Equals(ConstantsAWS.APPROXIMATE_RECEIVE_COUNT)).Value;
         _ = int.TryParse(previousDeliveriesStr, out int previousDeliveries);
         return previousDeliveries;
     }
@@ -79,7 +79,7 @@ public class Function
     {
         _serviceCollection = new ServiceCollection();
 
-        var proxyURL = Environment.GetEnvironmentVariable(Constants.WEB_PROXY_URL);
+        var proxyURL = Environment.GetEnvironmentVariable(ConstantsAWS.WEB_PROXY_URL);
 
         _ = _serviceCollection.AddTransient<ISqsService>(x =>
         {
